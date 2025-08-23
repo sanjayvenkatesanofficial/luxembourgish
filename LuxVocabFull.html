@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Luxembourgish Flashcard Game</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f4f8; text-align: center; padding: 50px; }
+    .flashcard { background: white; width: 320px; margin: auto; padding: 40px 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.3s; }
+    .flashcard:hover { transform: scale(1.05); }
+    .word { font-size: 2em; margin-bottom: 20px; }
+    .category { font-size: 0.9em; color: #888; margin-bottom: 10px; }
+    .button { margin: 10px; padding: 10px 20px; font-size: 1em; background-color: #0077cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    .button:hover { background-color: #005fa3; }
+  </style>
+</head>
+<body>
+
+  <h1>Luxembourgish Flashcard Game</h1>
+
+  <div class="flashcard" onclick="flipCard()">
+    <div class="category" id="category">Verb</div>
+    <div class="word" id="word">lafen</div>
+    <div class="translation" id="translation" style="display: none;">to run</div>
+  </div>
+
+  <div>
+    <button class="button" onclick="nextCard()">Next</button>
+    <button class="button" onclick="shuffleCards()">Shuffle</button>
+    <button class="button" onclick="markKnown()">Mark as Known</button>
+    <button class="button" onclick="toggleDirection()">Toggle Direction</button>
+  </div>
+
+  <script>
+    const words = [
+      {lux: "Stad", eng: "city", type: "Noun"},
+      {lux: "Haus", eng: "house", type: "Noun"},
+      {lux: "Wunneng", eng: "apartment", type: "Noun"},
+      {lux: "Strooss", eng: "street", type: "Noun"},
+      {lux: "Gaass", eng: "lane", type: "Noun"},
+      {lux: "Spidol", eng: "hospital", type: "Noun"},
+      {lux: "Schoul", eng: "school", type: "Noun"},
+      {lux: "Kand", eng: "child", type: "Noun"},
+      {lux: "Bett", eng: "bed", type: "Noun"},
+      {lux: "Dësch", eng: "table", type: "Noun"},
+      {lux: "Fënster", eng: "window", type: "Noun"},
+      {lux: "Duerf", eng: "village", type: "Noun"},
+      {lux: "Geld", eng: "money", type: "Noun"},
+      {lux: "Produkt", eng: "product", type: "Noun"},
+      {lux: "Bus", eng: "bus", type: "Noun"},
+      {lux: "Fliger", eng: "airplane", type: "Noun"},
+      {lux: "Schëff", eng: "ship", type: "Noun"},
+      {lux: "Woch", eng: "week", type: "Noun"},
+      {lux: "Dag", eng: "day", type: "Noun"},
+      {lux: "Stonn", eng: "hour", type: "Noun"},
+      {lux: "Minutt", eng: "minute", type: "Noun"},
+      {lux: "Sekonn", eng: "second", type: "Noun"},
+      {lux: "Zäit", eng: "time", type: "Noun"},
+      {lux: "Ween", eng: "car", type: "Noun"},
+      {lux: "Zuch", eng: "train", type: "Noun"},
+      {lux: "Fruucht", eng: "fruit", type: "Noun"},
+      {lux: "Fësch", eng: "fish", type: "Noun"},
+      {lux: "Brout", eng: "bread", type: "Noun"},
+      {lux: "Mëllech", eng: "milk", type: "Noun"},
+      {lux: "Fleesch", eng: "meat", type: "Noun"},
+      {lux: "Geméis", eng: "vegetables", type: "Noun"},
+      {lux: "Wäin", eng: "wine", type: "Noun"},
+      {lux: "Waasser", eng: "water", type: "Noun"},
+      {lux: "Präis", eng: "price", type: "Noun"},
+      {lux: "Locatioun", eng: "location", type: "Noun"},
+      {lux: "Uert", eng: "place", type: "Noun"},
+      {lux: "Kierper", eng: "body", type: "Noun"},
+      {lux: "Réck", eng: "back", type: "Noun"},
+      {lux: "Fouss", eng: "foot", type: "Noun"},
+      {lux: "Hand", eng: "hand", type: "Noun"},
+      {lux: "Kapp", eng: "head", type: "Noun"},
+      {lux: "Fanger", eng: "finger", type: "Noun"},
+      {lux: "Buedem", eng: "ground", type: "Noun"},
+      {lux: "Luucht", eng: "lamp", type: "Noun"},
+      {lux: "Daach", eng: "roof", type: "Noun"},
+      {lux: "Kummer", eng: "room", type: "Noun"},
+      {lux: "Lektioun", eng: "lesson", type: "Noun"},
+      {lux: "Léierer", eng: "teacher", type: "Noun"},
+      {lux: "Universitéit", eng: "university", type: "Noun"},
+      {lux: "Wëssenschaft", eng: "science", type: "Noun"},
+      {lux: "Physik", eng: "physics", type: "Noun"},
+      {lux: "Chemie", eng: "chemistry", type: "Noun"},
+      {lux: "Auer", eng: "clock", type: "Noun"},
+      {lux: "Joer", eng: "year", type: "Noun"},
+      {lux: "Ouer", eng: "ear", type: "Noun"},
+      {lux: "Kichen", eng: "kitchen", type: "Noun"},
+      {lux: "Kierch", eng: "church", type: "Noun"},
+      {lux: "Buttek", eng: "shop", type: "Noun"},
+      {lux: "Bank", eng: "bank", type: "Noun"},
+      {lux: "Bréck", eng: "bridge", type: "Noun"},
+      {lux: "Dëmpel", eng: "pond", type: "Noun"},
+      {lux: "Beem", eng: "trees", type: "Noun"},
+      {lux: "Blumm", eng: "flower", type: "Noun"},
+      {lux: "Buch", eng: "book", type: "Noun"},
+      {lux: "Zeitung", eng: "newspaper", type: "Noun"},
+      {lux: "Schreifdësch", eng: "desk", type: "Noun"},
+      {lux: "Stull", eng: "chair", type: "Noun"},
+      {lux: "Kleeder", eng: "clothes", type: "Noun"},
+      {lux: "Schong", eng: "shoes", type: "Noun"},
+      {lux: "Mantel", eng: "coat", type: "Noun"},
+      {lux: "Dier", eng: "door", type: "Noun"},
+      {lux: "Spigel", eng: "mirror", type: "Noun"},
+      {lux: "Bild", eng: "picture", type: "Noun"},
+      {lux: "Mauer", eng: "wall", type: "Noun"},
+      {lux: "Schlëssel", eng: "key", type: "Noun"},
+      {lux: "Handduch", eng: "towel", type: "Noun"},
+      {lux: "Seef", eng: "soap", type: "Noun"},
+      {lux: "Zännbiischt", eng: "toothbrush", type: "Noun"},
+      {lux: "Zuchstatioun", eng: "train station", type: "Noun"},
+      {lux: "Autosgarage", eng: "garage", type: "Noun"},
+      {lux: "Park", eng: "park", type: "Noun"},
+      {lux: "Terrain", eng: "field", type: "Noun"},
+      {lux: "Stadhaus", eng: "town hall", type: "Noun"},
+      {lux: "Kaffi", eng: "coffee", type: "Noun"},
+      {lux: "Téi", eng: "tea", type: "Noun"},
+      {lux: "Bier", eng: "beer", type: "Noun"},
+      {lux: "Zocker", eng: "sugar", type: "Noun"},
+      {lux: "Hunneg", eng: "honey", type: "Noun"},
+      {lux: "Uebst", eng: "fruit", type: "Noun"},
+      {lux: "Eis", eng: "ice", type: "Noun"},
+      {lux: "Kichelchen", eng: "cookie", type: "Noun"},
+      {lux: "Schockela", eng: "chocolate", type: "Noun"},
+      {lux: "Kéis", eng: "cheese", type: "Noun"},
+      {lux: "Ee", eng: "egg", type: "Noun"},
+      {lux: "Noss", eng: "nut", type: "Noun"},
+      {lux: "Zopp", eng: "soup", type: "Noun"},
+      {lux: "Reis", eng: "rice", type: "Noun"},
+      {lux: "Nuddelen", eng: "pasta", type: "Noun"},
+      {lux: "Uebstsalot", eng: "fruit salad", type: "Noun"},
+      {lux: "Geméiszalot", eng: "vegetable salad", type: "Noun"},
+      {lux: "Kichel", eng: "cake", type: "Noun"},
+      {lux: "lafen", eng: "to run", type: "Verb"},
+      {lux: "iessen", eng: "to eat", type: "Verb"},
+      {lux: "drénken", eng: "to drink", type: "Verb"},
+      {lux: "schwätzen", eng: "to speak", type: "Verb"},
+      {lux: "héieren", eng: "to hear", type: "Verb"},
+      {lux: "kucken", eng: "to look", type: "Verb"},
+      {lux: "schreiwen", eng: "to write", type: "Verb"},
+      {lux: "liesen", eng: "to read", type: "Verb"},
+      {lux: "schlofen", eng: "to sleep", type: "Verb"},
+      {lux: "schaffen", eng: "to work", type: "Verb"},
+      {lux: "spillen", eng: "to play", type: "Verb"},
+      {lux: "danzen", eng: "to dance", type: "Verb"},
+      {lux: "sangen", eng: "to sing", type: "Verb"},
+      {lux: "sprangen", eng: "to jump", type: "Verb"},
+      {lux: "fléien", eng: "to fly", type: "Verb"},
+      {lux: "kafen", eng: "to buy", type: "Verb"},
+      {lux: "verkafen", eng: "to sell", type: "Verb"},
+      {lux: "hëllefen", eng: "to help", type: "Verb"},
+      {lux: "maachen", eng: "to make/do", type: "Verb"},
+      {lux: "goen", eng: "to go", type: "Verb"},
+      {lux: "kommen", eng: "to come", type: "Verb"},
+      {lux: "halen", eng: "to hold", type: "Verb"},
+      {lux: "droen", eng: "to carry", type: "Verb"},
+      {lux: "bréngen", eng: "to bring", type: "Verb"},
+      {lux: "froen", eng: "to ask", type: "Verb"},
+      {lux: "äntweren", eng: "to answer", type: "Verb"},
+      {lux: "sichen", eng: "to search", type: "Verb"},
+      {lux: "fannen", eng: "to find", type: "Verb"},
+      {lux: "bezuelen", eng: "to pay", type: "Verb"},
+      {lux: "kachen", eng: "to cook", type: "Verb"},
+      {lux: "opmaachen", eng: "to open", type: "Verb"},
+      {lux: "zoumaachen", eng: "to close", type: "Verb"},
+      {lux: "verstoen", eng: "to understand", type: "Verb"},
+      {lux: "léieren", eng: "to learn", type: "Verb"},
+      {lux: "unterréichten", eng: "to teach", type: "Verb"},
+      {lux: "vergiessen", eng: "to forget", type: "Verb"},
+      {lux: "erënneren", eng: "to remember", type: "Verb"},
+      {lux: "beginnen", eng: "to begin", type: "Verb"},
+      {lux: "ophale", eng: "to stop", type: "Verb"},
+      {lux: "waarden", eng: "to wait", type: "Verb"},
+      {lux: "entscheeden", eng: "to decide", type: "Verb"},
+      {lux: "schwammen", eng: "to swim", type: "Verb"},
+      {lux: "fueren", eng: "to drive", type: "Verb"},
+      {lux: "reesen", eng: "to travel", type: "Verb"},
+      {lux: "zeichnen", eng: "to draw", type: "Verb"},
+      {lux: "molën", eng: "to paint", type: "Verb"},
+      {lux: "bauen", eng: "to build", type: "Verb"},
+      {lux: "lauschteren", eng: "to listen", type: "Verb"},
+      {lux: "setzen", eng: "to sit", type: "Verb"},
+      {lux: "stoen", eng: "to stand", type: "Verb"},
+      {lux: "falen", eng: "to fall", type: "Verb"},
+      {lux: "opstoen", eng: "to get up", type: "Verb"},
+      {lux: "ausgoen", eng: "to go out", type: "Verb"},
+      {lux: "zréckkommen", eng: "to return", type: "Verb"},
+      {lux: "bleiwen", eng: "to stay", type: "Verb"},
+      {lux: "schéin", eng: "beautiful", type: "Adjective"},
+      {lux: "grouss", eng: "big", type: "Adjective"},
+      {lux: "kleng", eng: "small", type: "Adjective"},
+      {lux: "staark", eng: "strong", type: "Adjective"},
+      {lux: "schwaach", eng: "weak", type: "Adjective"},
+      {lux: "séier", eng: "fast", type: "Adjective"},
+      {lux: "lues", eng: "slow", type: "Adjective"},
+      {lux: "hell", eng: "bright", type: "Adjective"},
+      {lux: "donnkel", eng: "dark", type: "Adjective"},
+      {lux: "gréng", eng: "green", type: "Adjective"},
+      {lux: "blo", eng: "blue", type: "Adjective"},
+      {lux: "roude", eng: "red", type: "Adjective"},
+      {lux: "giel", eng: "yellow", type: "Adjective"},
+      {lux: "schwaarz", eng: "black", type: "Adjective"},
+      {lux: "wäiss", eng: "white", type: "Adjective"},
+      {lux: "brong", eng: "brown", type: "Adjective"},
+      {lux: "gutt", eng: "good", type: "Adjective"},
+      {lux: "schlecht", eng: "bad", type: "Adjective"},
+      {lux: "deier", eng: "expensive", type: "Adjective"},
+      {lux: "bëlleg", eng: "cheap", type: "Adjective"},
+      {lux: "nei", eng: "new", type: "Adjective"},
+      {lux: "al", eng: "old", type: "Adjective"},
+      {lux: "jung", eng: "young", type: "Adjective"},
+      {lux: "al", eng: "ancient", type: "Adjective"},
+      {lux: "interessant", eng: "interesting", type: "Adjective"},
+      {lux: "langweileg", eng: "boring", type: "Adjective"},
+      {lux: "roueg", eng: "quiet", type: "Adjective"},
+      {lux: "haart", eng: "loud", type: "Adjective"},
+      {lux: "glécklech", eng: "happy", type: "Adjective"},
+      {lux: "traureg", eng: "sad", type: "Adjective"},
+      {lux: "krank", eng: "sick", type: "Adjective"},
+      {lux: "gesond", eng: "healthy", type: "Adjective"},
+      {lux: "richteg", eng: "correct", type: "Adjective"},
+      {lux: "falsch", eng: "wrong", type: "Adjective"},
+      {lux: "normal", eng: "normal", type: "Adjective"},
+      {lux: "besonnesch", eng: "special", type: "Adjective"},
+      {lux: "liicht", eng: "easy", type: "Adjective"},
+      {lux: "schwéier", eng: "difficult", type: "Adjective"},
+      {lux: "schmutzeg", eng: "dirty", type: "Adjective"},
+      {lux: "propper", eng: "clean", type: "Adjective"},
+      {lux: "flaach", eng: "flat", type: "Adjective"},
+      {lux: "héich", eng: "high", type: "Adjective"},
+      {lux: "déif", eng: "deep", type: "Adjective"},
+      {lux: "wäit", eng: "far", type: "Adjective"},
+      {lux: "no", eng: "near", type: "Adjective"},
+      {lux: "voll", eng: "full", type: "Adjective"},
+      {lux: "eidel", eng: "empty", type: "Adjective"},
+      {lux: "waar", eng: "warm", type: "Adjective"},
+      {lux: "kal", eng: "cold", type: "Adjective"},
+      {lux: "séier", eng: "quickly", type: "Adverb"},
+      {lux: "lues", eng: "slowly", type: "Adverb"},
+      {lux: "gären", eng: "with pleasure", type: "Adverb"},
+      {lux: "vläicht", eng: "maybe", type: "Adverb"},
+      {lux: "heefeg", eng: "often", type: "Adverb"},
+      {lux: "seelen", eng: "rarely", type: "Adverb"},
+      {lux: "bal", eng: "almost", type: "Adverb"},
+      {lux: "genuch", eng: "enough", type: "Adverb"},
+      {lux: "net", eng: "not", type: "Adverb"},
+      {lux: "jo", eng: "yes", type: "Adverb"},
+      {lux: "nee", eng: "no", type: "Adverb"},
+      {lux: "hei", eng: "here", type: "Adverb"},
+      {lux: "do", eng: "there", type: "Adverb"},
+      {lux: "iwwerall", eng: "everywhere", type: "Adverb"},
+      {lux: "néierens", eng: "nowhere", type: "Adverb"},
+      {lux: "schonn", eng: "already", type: "Adverb"},
+      {lux: "nach", eng: "still", type: "Adverb"},
+      {lux: "ganz", eng: "completely", type: "Adverb"},
+      {lux: "méi", eng: "more", type: "Adverb"},
+      {lux: "manner", eng: "less", type: "Adverb"},
+      {lux: "sou", eng: "thus", type: "Adverb"},
+      {lux: "wéinstens", eng: "at least", type: "Adverb"},
+      {lux: "vläit", eng: "perhaps", type: "Adverb"},
+      {lux: "dacks", eng: "often", type: "Adverb"},
+      {lux: "heiansdo", eng: "sometimes", type: "Adverb"},
+      {lux: "ëmmer", eng: "always", type: "Adverb"},
+      {lux: "an", eng: "and", type: "Connector"},
+      {lux: "awer", eng: "but", type: "Connector"},
+      {lux: "oder", eng: "or", type: "Connector"},
+      {lux: "wann", eng: "when/if", type: "Connector"},
+      {lux: "well", eng: "because", type: "Connector"},
+      {lux: "obschonn", eng: "although", type: "Connector"},
+      {lux: "fir", eng: "for", type: "Connector"},
+      {lux: "mat", eng: "with", type: "Connector"},
+      {lux: "ouni", eng: "without", type: "Connector"},
+      {lux: "géint", eng: "against", type: "Connector"},
+      {lux: "tëscht", eng: "between", type: "Connector"},
+      {lux: "no", eng: "after", type: "Connector"},
+      {lux: "virun", eng: "before", type: "Connector"},
+      {lux: "iwwer", eng: "about/over", type: "Connector"},
+      {lux: "ënnert", eng: "under", type: "Connector"},
+      {lux: "trotz", eng: "despite", type: "Connector"},
+      {lux: "zënter", eng: "since", type: "Connector"},
+      {lux: "bis", eng: "until", type: "Connector"},
+      {lux: "och", eng: "also", type: "Connector"},
+      {lux: "sou datt", eng: "so that", type: "Connector"},
+      {lux: "ob", eng: "whether", type: "Connector"},
+      {lux: "dofir", eng: "therefore", type: "Connector"},
+      {lux: "also", eng: "thus", type: "Connector"},
+      {lux: "während", eng: "while", type: "Connector"},
+      {lux: "dann", eng: "then", type: "Connector"},
+      {lux: "éischt", eng: "first", type: "Connector"},
+      {lux: "duerno", eng: "afterwards", type: "Connector"},
+      {lux: "zum Beispill", eng: "for example", type: "Connector"},
+    ];
+
+    let availableCards = [...words]; 
+    let currentIndex = -1;
+    let showingTranslation = false;
+    let direction = "luxToEng"; // default: show Luxembourgish, reveal English
+
+    function showCard(card) {
+      if (!card) {
+        document.getElementById('word').innerText = "🎉 All cards learned!";
+        document.getElementById('translation').innerText = "";
+        document.getElementById('category').innerText = "";
+        document.getElementById('translation').style.display = "none";
+        return;
+      }
+      if (direction === "luxToEng") {
+        document.getElementById('word').innerText = card.lux;
+        document.getElementById('translation').innerText = card.eng;
+      } else {
+        document.getElementById('word').innerText = card.eng;
+        document.getElementById('translation').innerText = card.lux;
+      }
+      document.getElementById('category').innerText = card.type;
+      document.getElementById('translation').style.display = 'none';
+      showingTranslation = false;
+    }
+
+    function nextCard() {
+      if (availableCards.length === 0) {
+        showCard(null);
+        return;
+      }
+      currentIndex = (currentIndex + 1) % availableCards.length;
+      showCard(availableCards[currentIndex]);
+    }
+
+    function shuffleCards() {
+      for (let i = availableCards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [availableCards[i], availableCards[j]] = [availableCards[j], availableCards[i]];
+      }
+      currentIndex = -1;
+      nextCard();
+    }
+
+    function markKnown() {
+      if (currentIndex >= 0 && availableCards.length > 0) {
+        availableCards.splice(currentIndex, 1);
+        if (availableCards.length === 0) {
+          showCard(null);
+        } else {
+          currentIndex = currentIndex % availableCards.length;
+          showCard(availableCards[currentIndex]);
+        }
+      }
+    }
+
+    function flipCard() {
+      const t = document.getElementById('translation');
+      showingTranslation = !showingTranslation;
+      t.style.display = showingTranslation ? 'block' : 'none';
+    }
+
+    function toggleDirection() {
+      direction = (direction === "luxToEng") ? "engToLux" : "luxToEng";
+      if (currentIndex >= 0 && availableCards.length > 0) {
+        showCard(availableCards[currentIndex]);
+      }
+    }
+
+    shuffleCards(); // Start shuffled
+  </script>
+</body>
+</html>
